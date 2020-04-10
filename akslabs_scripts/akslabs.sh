@@ -10,7 +10,7 @@
 # "--version" print version
 
 # read the options
-TEMP=`getopt -o g:n:l:r:hv --long resource-group:,name:,lab:,region:,help,validate,version -n 'akslabs.sh' -- "$@"`
+TEMP=`getopt -o g:n:l:r:s:hv --long resource-group:,name:,lab:,region:,size:,help,validate,version -n 'akslabs.sh' -- "$@"`
 eval set -- "$TEMP"
 
 # set an initial value for the flags
@@ -325,10 +325,10 @@ fi
 
 if [ -z $LAB_SCENARIO ]; then
 	echo -e "Error: Lab scenario value must be provided. \n"
-	echo -e "akslabs usage: akslabs -l <LAB#> [-v|--validate] [-r|--region] [-h|--help] [--version]\n"
+	echo -e "akslabs usage: akslabs -l <LAB#> [-v|--validate] [-r|--region] [-h|--help] [-s|--size] [--version]\n"
     echo -e "\nHere is the list of current labs available:\n
 ***************************************************************
-*\t 1. Scale action failed (SP issues)
+*\t 1. Scale afction failed (SP issues)
 *\t 2. Cluster failed to delete
 *\t 3. Cluster deployment failed
 *\t 4. Cluster failed after upgrade
