@@ -110,15 +110,23 @@ function validate_cluster_exists () {
 function lab_scenario_1 () {
     CLUTER_NAME=aks-ex1
     RESOURE_GROUP=aks-ex1-rg
+    SERVICE_PRINCIPAL_NAME=mysp
     check_resourcegroup_cluster $RESOURE_GROUP $CLUTER_NAME
 
     echo -e "Deploying cluster for lab1...\n"
+
+    SERVICE_PRINCIPAL_NAME=mysp
+    SP_SECRET=$(az ad sp create-for-rbac --name http://$SERVICE_PRINCIPAL_NAME --skip-assignment --query password --output tsv)
+    SP_ID=$(az ad sp show --id http://$SERVICE_PRINCIPAL_NAME --query appId --output tsv)
+    
     az aks create \
     --resource-group $RESOURE_GROUP \
     --name $CLUTER_NAME \
     --location $LOCATION \
     --node-vm-size $VM_SIZE \
     --node-count 1 \
+    --service-principal $SP_ID\
+    --client-secret $SP_SECRET
     --generate-ssh-keys \
     --tag akslab=${LAB_SCENARIO} \
     -o table
@@ -127,8 +135,7 @@ function lab_scenario_1 () {
 
     echo -e "\n\nPlease wait while we are preparing the environment for you to troubleshoot..."
     az aks get-credentials -g $RESOURE_GROUP -n $CLUTER_NAME --overwrite-existing
-    SP_ID=$(az aks show -g $RESOURE_GROUP -n $CLUTER_NAME --query servicePrincipalProfile.clientId -o tsv)
-    SP_SECRET=$(az ad sp credential reset --name $SP_ID --query password -o tsv)
+  
     az aks scale -g $RESOURE_GROUP -n $CLUTER_NAME -c 2
     CLUSTER_URI="$(az aks show -g $RESOURCE_GROUP -n $CLUSTER_NAME --query id -o tsv)"
     echo -e "Case 1 is ready, cluster not able to scale...\n"
@@ -141,14 +148,20 @@ function lab_scenario_2 () {
     RESOURE_GROUP=aks-ex2-rg
     check_resourcegroup_cluster $RESOURE_GROUP $CLUTER_NAME
 
+    SERVICE_PRINCIPAL_NAME=mysp2
+    SP_SECRET=$(az ad sp create-for-rbac --name http://$SERVICE_PRINCIPAL_NAME --skip-assignment --query password --output tsv)
+    SP_ID=$(az ad sp show --id http://$SERVICE_PRINCIPAL_NAME --query appId --output tsv)
+    
     az aks create \
     --resource-group $RESOURE_GROUP \
     --name $CLUTER_NAME \
     --location $LOCATION \
-    --node-count 1 \
-    --generate-ssh-keys \
     --node-vm-size $VM_SIZE \
-    --tag l200lab=${LAB_SCENARIO} \
+    --node-count 1 \
+    --service-principal $SP_ID\
+    --client-secret $SP_SECRET \
+    --generate-ssh-keys \
+    --tag akslab=${LAB_SCENARIO} \
     -o table
 
     validate_cluster_exists $RESOURE_GROUP $CLUTER_NAME
@@ -198,12 +211,19 @@ function lab_scenario_3 () {
     --vnet-name $VNET_NAME \
     --query [].id --output tsv)
 
+    SERVICE_PRINCIPAL_NAME=mysp3
+    SP_SECRET=$(az ad sp create-for-rbac --name http://$SERVICE_PRINCIPAL_NAME --skip-assignment --query password --output tsv)
+    SP_ID=$(az ad sp show --id http://$SERVICE_PRINCIPAL_NAME --query appId --output tsv)
+    
+
     az aks create \
     --resource-group $RESOURE_GROUP \
     --name $CLUTER_NAME \
     --location $LOCATION \
     --kubernetes-version 1.15.7 \
     --node-count 2 \
+    --service-principal $SP_ID\
+    --client-secret $SP_SECRET \
     --node-osdisk-size 100 \
     --network-plugin azure \
     --service-cidr 10.0.0.0/16 \
@@ -242,6 +262,10 @@ function lab_scenario_4 () {
     --vnet-name $VNET_NAME \
     --query [].id --output tsv)
 
+    SERVICE_PRINCIPAL_NAME=mysp4
+    SP_SECRET=$(az ad sp create-for-rbac --name http://$SERVICE_PRINCIPAL_NAME --skip-assignment --query password --output tsv)
+    SP_ID=$(az ad sp show --id http://$SERVICE_PRINCIPAL_NAME --query appId --output tsv)
+
     az aks create \
     --resource-group $RESOURCE_GROUP \
     --name $CLUSTER_NAME \
@@ -259,6 +283,8 @@ function lab_scenario_4 () {
     --node-vm-size $VM_SIZE \
     --generate-ssh-keys \
     --tag l200lab=${LAB_SCENARIO} \
+    --service-principal $SP_ID\
+    --client-secret $SP_SECRET \
     -o table
 
     validate_cluster_exists $RESOURE_GROUP $CLUTER_NAME
@@ -274,6 +300,10 @@ function lab_scenario_5 () {
     RESOURE_GROUP=aks-ex5-rg1
     check_resourcegroup_cluster $RESOURE_GROUP $CLUTER_NAME
 
+    SERVICE_PRINCIPAL_NAME=mysp5
+    SP_SECRET=$(az ad sp create-for-rbac --name http://$SERVICE_PRINCIPAL_NAME --skip-assignment --query password --output tsv)
+    SP_ID=$(az ad sp show --id http://$SERVICE_PRINCIPAL_NAME --query appId --output tsv)
+
     az aks create \
     --resource-group $RESOURE_GROUP \
     --name $CLUTER_NAME \
@@ -285,6 +315,8 @@ function lab_scenario_5 () {
     --enable-addons monitoring \
     --generate-ssh-keys \
     --tag l200lab=${LAB_SCENARIO} \
+    --service-principal $SP_ID\
+    --client-secret $SP_SECRET \
     -o table
 
     validate_cluster_exists $RESOURE_GROUP $CLUTER_NAME
