@@ -18,6 +18,7 @@ RESOURCE_GROUP=""
 CLUSTER_NAME=""
 LAB_SCENARIO=""
 LOCATION="eastus2"
+VM_SIZE=""
 VALIDATE=0
 HELP=0
 VERSION=0
@@ -41,6 +42,10 @@ do
         -r|--region) case "$2" in
             "") shift 2;;
             *) LOCATION="$2"; shift 2;;
+            esac;;   
+        -s|--size) case "$2" in
+            "") shift 2;;
+            *) VM_SIZE="$2"; shift 2;;
             esac;;    
         -v|--validate) VALIDATE=1; shift;;
         --version) VERSION=1; shift;;
@@ -112,6 +117,7 @@ function lab_scenario_1 () {
     --resource-group $RESOURE_GROUP \
     --name $CLUTER_NAME \
     --location $LOCATION \
+    --node-vm-size $VM_SIZE \
     --node-count 1 \
     --generate-ssh-keys \
     --tag akslab=${LAB_SCENARIO} \
@@ -141,6 +147,7 @@ function lab_scenario_2 () {
     --location $LOCATION \
     --node-count 1 \
     --generate-ssh-keys \
+    --node-vm-size $VM_SIZE \
     --tag l200lab=${LAB_SCENARIO} \
     -o table
 
@@ -203,6 +210,7 @@ function lab_scenario_3 () {
     --dns-service-ip 10.0.0.10 \
     --docker-bridge-address 172.17.0.1/16 \
     --vnet-subnet-id $SUBNET_ID \
+    --node-vm-size $VM_SIZE \
     --generate-ssh-keys \
     --tag l200lab=${LAB_SCENARIO} \
     -o table
@@ -248,6 +256,7 @@ function lab_scenario_4 () {
     --dns-service-ip 10.0.0.10 \
     --docker-bridge-address 172.17.0.1/16 \
     --vnet-subnet-id $SUBNET_ID \
+    --node-vm-size $VM_SIZE \
     --generate-ssh-keys \
     --tag l200lab=${LAB_SCENARIO} \
     -o table
@@ -272,7 +281,7 @@ function lab_scenario_5 () {
     --node-count 2 \
     --node-osdisk-size 30 \
     --max-pods 100 \
-    --node-vm-size Standard_B2ms \
+    --node-vm-size $VM_SIZE \
     --enable-addons monitoring \
     --generate-ssh-keys \
     --tag l200lab=${LAB_SCENARIO} \
