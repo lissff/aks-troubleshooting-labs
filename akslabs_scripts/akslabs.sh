@@ -10,7 +10,7 @@
 # "--version" print version
 
 # read the options
-TEMP=`getopt -o g:n:l:r:s:hv --long resource-group:,name:,lab:,region:,size:,help,validate,version -n 'akslabs.sh' -- "$@"`
+TEMP=`getopt -o l:r:s:hv --long lab:,region:,size:,help,validate,version -n 'akslabs.sh' -- "$@"`
 eval set -- "$TEMP"
 
 # set an initial value for the flags
@@ -23,18 +23,12 @@ VALIDATE=0
 HELP=0
 VERSION=0
 
+
 while true ;
 do
     case "$1" in
         -h|--help) HELP=1; shift;;
-        -g|--resource-group) case "$2" in
-            "") shift 2;;
-            *) RESOURCE_GROUP="$2"; shift 2;;
-            esac;;
-        -n|--name) case "$2" in
-            "") shift 2;;
-            *) CLUSTER_NAME="$2"; shift 2;;
-            esac;;
+       
         -l|--lab) case "$2" in
             "") shift 2;;
             *) LAB_SCENARIO="$2"; shift 2;;
@@ -54,11 +48,13 @@ do
     esac
 done
 
+
 # Variable definition
 SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 SCRIPT_NAME="$(echo $0 | sed 's|\.\/||g')"
 SCRIPT_VERSION="Version v0.1.3 20200402"
 
+echo $SCRIPT_VERSION
 # Funtion definition
 
 # az login check
@@ -110,14 +106,16 @@ function validate_cluster_exists () {
 function lab_scenario_1 () {
     CLUTER_NAME=aks-ex1
     RESOURE_GROUP=aks-ex1-rg
-    SERVICE_PRINCIPAL_NAME=mysp
     check_resourcegroup_cluster $RESOURE_GROUP $CLUTER_NAME
 
     echo -e "Deploying cluster for lab1...\n"
 
-    SERVICE_PRINCIPAL_NAME=mysp
-    SP_SECRET=$(az ad sp create-for-rbac --name http://$SERVICE_PRINCIPAL_NAME --skip-assignment --query password --output tsv)
-    SP_ID=$(az ad sp show --id http://$SERVICE_PRINCIPAL_NAME --query appId --output tsv)
+    SP=$(az ad sp create-for-rbac -n "SP_$RESOURE_GROUP" --skip-assignment --output json)
+    SP_ID=$(echo $SP | jq -r .appId)
+    SP_SECRET=$(echo $SP | jq -r .password)
+
+    echo -e "SP_ID " $SP_ID
+    echo -e "SP_SECRET" $SP_SECRET
     
     az aks create \
     --resource-group $RESOURE_GROUP \
@@ -126,7 +124,7 @@ function lab_scenario_1 () {
     --node-vm-size $VM_SIZE \
     --node-count 1 \
     --service-principal $SP_ID\
-    --client-secret $SP_SECRET
+    --client-secret $SP_SECRET \
     --generate-ssh-keys \
     --tag akslab=${LAB_SCENARIO} \
     -o table
@@ -148,10 +146,15 @@ function lab_scenario_2 () {
     RESOURE_GROUP=aks-ex2-rg
     check_resourcegroup_cluster $RESOURE_GROUP $CLUTER_NAME
 
-    SERVICE_PRINCIPAL_NAME=mysp2
-    SP_SECRET=$(az ad sp create-for-rbac --name http://$SERVICE_PRINCIPAL_NAME --skip-assignment --query password --output tsv)
-    SP_ID=$(az ad sp show --id http://$SERVICE_PRINCIPAL_NAME --query appId --output tsv)
-    
+    echo -e "Deploying cluster for lab2...\n"
+
+    SP=$(az ad sp create-for-rbac -n "SP_$RESOURE_GROUP" --skip-assignment --output json)
+    SP_ID=$(echo $SP | jq -r .appId)
+    SP_SECRET=$(echo $SP | jq -r .password)
+
+    echo -e "SP_ID " $SP_ID
+    echo -e "SP_SECRET" $SP_SECRET
+
     az aks create \
     --resource-group $RESOURE_GROUP \
     --name $CLUTER_NAME \
@@ -211,10 +214,14 @@ function lab_scenario_3 () {
     --vnet-name $VNET_NAME \
     --query [].id --output tsv)
 
-    SERVICE_PRINCIPAL_NAME=mysp3
-    SP_SECRET=$(az ad sp create-for-rbac --name http://$SERVICE_PRINCIPAL_NAME --skip-assignment --query password --output tsv)
-    SP_ID=$(az ad sp show --id http://$SERVICE_PRINCIPAL_NAME --query appId --output tsv)
-    
+
+
+    SP=$(az ad sp create-for-rbac -n "SP_$RESOURE_GROUP" --skip-assignment --output json)
+    SP_ID=$(echo $SP | jq -r .appId)
+    SP_SECRET=$(echo $SP | jq -r .password)
+
+    echo -e "SP_ID " $SP_ID
+    echo -e "SP_SECRET" $SP_SECRET
 
     az aks create \
     --resource-group $RESOURE_GROUP \
@@ -262,9 +269,10 @@ function lab_scenario_4 () {
     --vnet-name $VNET_NAME \
     --query [].id --output tsv)
 
-    SERVICE_PRINCIPAL_NAME=mysp4
-    SP_SECRET=$(az ad sp create-for-rbac --name http://$SERVICE_PRINCIPAL_NAME --skip-assignment --query password --output tsv)
-    SP_ID=$(az ad sp show --id http://$SERVICE_PRINCIPAL_NAME --query appId --output tsv)
+    
+    SP=$(az ad sp create-for-rbac -n "SP_$RESOURE_GROUP" --skip-assignment --output json)
+    SP_ID=$(echo $SP | jq -r .appId)
+    SP_SECRET=$(echo $SP | jq -r .password)
 
     az aks create \
     --resource-group $RESOURCE_GROUP \
@@ -300,9 +308,10 @@ function lab_scenario_5 () {
     RESOURE_GROUP=aks-ex5-rg1
     check_resourcegroup_cluster $RESOURE_GROUP $CLUTER_NAME
 
-    SERVICE_PRINCIPAL_NAME=mysp5
-    SP_SECRET=$(az ad sp create-for-rbac --name http://$SERVICE_PRINCIPAL_NAME --skip-assignment --query password --output tsv)
-    SP_ID=$(az ad sp show --id http://$SERVICE_PRINCIPAL_NAME --query appId --output tsv)
+   
+    SP=$(az ad sp create-for-rbac -n "SP_$RESOURE_GROUP" --skip-assignment --output json)
+    SP_ID=$(echo $SP | jq -r .appId)
+    SP_SECRET=$(echo $SP | jq -r .password)
 
     az aks create \
     --resource-group $RESOURE_GROUP \
